@@ -1,19 +1,31 @@
 if (Meteor.isClient) {
-  Template.hello.greeting = function () {
-    return "Welcome to meteor-ws-test.";
-  };
+    Alerts = new Meteor.Collection("alerts");
 
-  Template.hello.events({
-    'click input' : function () {
-      // template data, if any, is available in 'this'
-      if (typeof console !== 'undefined')
-        console.log("You pressed the button");
-    }
-  });
+    Meteor.autosubscribe(function() {
+        Alerts.find().observe({
+            added: function(item){
+                el = document.getElementById('date');
+                var newEl = document.createElement("span");
+                newEl.id = "date";
+                newEl.textContent = item.date_tracker.date;
+                el.parentNode.replaceChild(newEl, el);
+            }
+        })
+    });
+
 }
 
 if (Meteor.isServer) {
-  Meteor.startup(function () {
-    // code to run on server at startup
-  });
+    Alerts = new Meteor.Collection("alerts");
+
+    Meteor.publish("alerts", function(){
+        Alerts.find("counter");
+    });
+
+    Alerts.remove({});
+
+    Alerts.insert({date_tracker : {date : Date()}});
+    Meteor.setInterval(function() {
+        Alerts.insert({date_tracker : {date: Date()}});
+    }, 1000);
 }
